@@ -3,12 +3,12 @@ import type { TestTableRow } from '@/types/database'
 import { sqliteService } from '@/services/sqlite'
 import { DatabaseError } from '@/utils/errors'
 
-export class TestTableRepository {
-  async initialize(): Promise<boolean> {
+export function createTestTableRepository() {
+  async function initialize(): Promise<boolean> {
     return await sqliteService.initialize()
   }
 
-  async getAll(): Promise<TestTableRow[]> {
+  async function getAll(): Promise<TestTableRow[]> {
     const result = await sqliteService.executeWithRows<any[]>(
       'SELECT * FROM test_table',
     )
@@ -19,7 +19,7 @@ export class TestTableRepository {
     }))
   }
 
-  async create(name: string): Promise<void> {
+  async function create(name: string): Promise<void> {
     if (!name.trim())
       throw new Error('Name cannot be empty')
     await sqliteService.execute(
@@ -28,14 +28,14 @@ export class TestTableRepository {
     )
   }
 
-  async delete(id: number): Promise<void> {
+  async function delete_(id: number): Promise<void> {
     await sqliteService.execute(
       'DELETE FROM test_table WHERE id = ?',
       [id],
     )
   }
 
-  async executeRawQuery(query: string): Promise<any> {
+  async function executeRawQuery(query: string): Promise<any> {
     try {
       return await sqliteService.executeWithRows(query)
     }
@@ -45,7 +45,7 @@ export class TestTableRepository {
     }
   }
 
-  sortItems(items: TestTableRow[], field: SortField, direction: SortDirection): TestTableRow[] {
+  function sortItems(items: TestTableRow[], field: SortField, direction: SortDirection): TestTableRow[] {
     return [...items].sort((a, b) => {
       const aValue = a[field]
       const bValue = b[field]
@@ -62,7 +62,7 @@ export class TestTableRepository {
     })
   }
 
-  isModificationQuery(query: string): boolean {
+  function isModificationQuery(query: string): boolean {
     const lowerQuery = query.toLowerCase().trim()
     return (
       lowerQuery.startsWith('insert')
@@ -70,6 +70,16 @@ export class TestTableRepository {
       || lowerQuery.startsWith('delete')
     )
   }
+
+  return {
+    initialize,
+    getAll,
+    create,
+    delete: delete_,
+    executeRawQuery,
+    sortItems,
+    isModificationQuery,
+  }
 }
 
-export const testTableRepository = new TestTableRepository()
+export const testTableRepository = createTestTableRepository()
