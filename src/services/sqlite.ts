@@ -3,67 +3,72 @@ import { DatabaseError, InitializationError, QueryError } from '@/utils/errors'
 // @ts-expect-error this import is correct
 import { sqlite3Worker1Promiser } from '@sqlite.org/sqlite-wasm'
 
-class SQLiteService {
-  private promiser: any = null
-  private dbId: string | null = null
+type SQLitePromiser = any
+type QueryResult<T> = T
 
-  async initialize() {
-    try {
-      this.promiser = await new Promise((resolve) => {
-        const _promiser = sqlite3Worker1Promiser({
-          onready: () => resolve(_promiser),
-        })
+let promiser: SQLitePromiser | null = null
+let dbId: string | null = null
+
+async function initialize() {
+  try {
+    promiser = await new Promise((resolve) => {
+      const _promiser = sqlite3Worker1Promiser({
+        onready: () => resolve(_promiser),
       })
+    })
 
-      await this.promiser('config-get', {})
+    await promiser('config-get', {})
 
-      const openResponse = await this.promiser('open', {
-        filename: databaseConfig.filename,
-      })
-      this.dbId = openResponse.dbId
+    const openResponse = await promiser('open', {
+      filename: databaseConfig.filename,
+    })
+    dbId = openResponse.dbId
 
-      // Create a test table
-      await this.promiser('exec', {
-        dbId: this.dbId,
-        sql: databaseConfig.tables.test.schema,
-      })
+    // Create a test table
+    await promiser('exec', {
+      dbId,
+      sql: databaseConfig.tables.test.schema,
+    })
 
-      return true
-    }
-    catch (err) {
-      throw new InitializationError('Failed to initialize SQLite database', err)
-    }
+    return true
   }
-
-  private async executeQuery<T>(
-    sql: string,
-    params: any[] = [],
-    returnRows = false,
-  ): Promise<T> {
-    if (!this.dbId)
-      throw new DatabaseError('Database not initialized')
-
-    try {
-      const result = await this.promiser('exec', {
-        dbId: this.dbId,
-        sql,
-        bind: params,
-        ...(returnRows && { returnValue: 'resultRows' }),
-      })
-      return returnRows ? result.result.resultRows : result
-    }
-    catch (err) {
-      throw new QueryError('Query execution failed', sql, err)
-    }
-  }
-
-  async execute(sql: string, params: any[] = []): Promise<any> {
-    return await this.executeQuery(sql, params)
-  }
-
-  async executeWithRows<T>(sql: string, params: any[] = []): Promise<T> {
-    return await this.executeQuery<T>(sql, params, true)
+  catch (err) {
+    throw new InitializationError('Failed to initialize SQLite database', err)
   }
 }
 
-export const sqliteService = new SQLiteService()
+async function executeQuery<T>(
+  sql: string,
+  params: any[] = [],
+  returnRows = false,
+): Promise<QueryResult<T>> {
+  if (!dbId)
+    throw new DatabaseError('Database not initialized')
+
+  try {
+    const result = await promiser!('exec', {
+      dbId,
+      sql,
+      bind: params,
+      ...(returnRows && { returnValue: 'resultRows' }),
+    })
+    return returnRows ? result.result.resultRows : result
+  }
+  catch (err) {
+    throw new QueryError('Query execution failed', sql, err)
+  }
+}
+
+async function execute(sql: string, params: any[] = []): Promise<any> {
+  return await executeQuery(sql, params)
+}
+
+async function executeWithRows<T>(sql: string, params: any[] = []): Promise<T> {
+  return await executeQuery<T>(sql, params, true)
+}
+
+export const sqliteService = {
+  initialize,
+  execute,
+  executeWithRows,
+}

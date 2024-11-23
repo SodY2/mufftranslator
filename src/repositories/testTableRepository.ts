@@ -1,5 +1,5 @@
-import type { TestTableRow } from '@/types/database'
 import type { SortDirection, SortField } from '@/composables/useTestTable'
+import type { TestTableRow } from '@/types/database'
 import { sqliteService } from '@/services/sqlite'
 import { DatabaseError } from '@/utils/errors'
 
@@ -10,7 +10,7 @@ export class TestTableRepository {
 
   async getAll(): Promise<TestTableRow[]> {
     const result = await sqliteService.executeWithRows<any[]>(
-      'SELECT * FROM test_table'
+      'SELECT * FROM test_table',
     )
     return result.map(row => ({
       id: row[0],
@@ -24,14 +24,14 @@ export class TestTableRepository {
       throw new Error('Name cannot be empty')
     await sqliteService.execute(
       'INSERT INTO test_table (name) VALUES (?)',
-      [name]
+      [name],
     )
   }
 
   async delete(id: number): Promise<void> {
     await sqliteService.execute(
       'DELETE FROM test_table WHERE id = ?',
-      [id]
+      [id],
     )
   }
 
@@ -65,8 +65,8 @@ export class TestTableRepository {
   isModificationQuery(query: string): boolean {
     const lowerQuery = query.toLowerCase().trim()
     return (
-      lowerQuery.startsWith('insert') 
-      || lowerQuery.startsWith('update') 
+      lowerQuery.startsWith('insert')
+      || lowerQuery.startsWith('update')
       || lowerQuery.startsWith('delete')
     )
   }
