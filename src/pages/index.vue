@@ -1,64 +1,25 @@
 <script setup lang="ts">
-import type { TestTableRow } from '@/types/database'
-import { sqliteService } from '@/services/sqlite'
+import { useTestTable } from '@/composables/useTestTable'
+import { formatDate } from '@/utils/dateFormatter'
 import { onMounted, ref } from 'vue'
 
-const isInitialized = ref(false)
 const newName = ref('')
-const items = ref<TestTableRow[]>([])
-const error = ref<string | null>(null)
+const {
+  isInitialized,
+  items,
+  error,
+  isLoading,
+  initialize,
+  addItem,
+} = useTestTable()
 
-onMounted(async () => {
-  try {
-    isInitialized.value = await sqliteService.initialize()
-    if (isInitialized.value) {
-      await loadData()
-    }
-    else {
-      error.value = 'SQLite initialization returned false'
-    }
-  }
-  catch (e) {
-    error.value = `Failed to initialize database: ${(e as Error).message}`
-  }
+onMounted(() => {
+  initialize()
 })
 
-async function loadData() {
-  try {
-    const result = await sqliteService.getData()
-    items.value = result.map(row => ({
-      id: row[0],
-      name: row[1],
-      created_at: row[2],
-    }))
-  }
-  catch (e) {
-    error.value = `Failed to load data: ${(e as Error).message}`
-  }
-}
-
-async function addItem() {
-  if (!newName.value.trim())
-    return
-
-  try {
-    await sqliteService.insertData(newName.value)
-    newName.value = ''
-    await loadData()
-  }
-  catch (e) {
-    error.value = `Failed to add item: ${(e as Error).message}`
-  }
-}
-
-function formatDate(dateString: string | number) {
-  try {
-    const date = new Date(dateString)
-    return date.toLocaleString()
-  }
-  catch {
-    return dateString
-  }
+async function handleAddItem() {
+  await addItem(newName.value)
+  newName.value = ''
 }
 </script>
 
@@ -79,13 +40,14 @@ function formatDate(dateString: string | number) {
           type="text"
           placeholder="Enter a name"
           class="border p-2 rounded"
-          @keyup.enter="addItem"
+          @keyup.enter="handleAddItem"
         >
         <button
           class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-          @click="addItem"
+          :disabled="isLoading"
+          @click="handleAddItem"
         >
-          Add
+          {{ isLoading ? 'Loading...' : 'Add' }}
         </button>
       </div>
 
