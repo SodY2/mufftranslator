@@ -1,4 +1,4 @@
-import type { Worker } from 'worker_threads'
+import type { Worker } from 'node:worker_threads'
 
 declare module '@sqlite.org/sqlite-wasm' {
   type OnreadyFunction = () => void
@@ -49,9 +49,11 @@ declare module '@sqlite.org/sqlite-wasm' {
         returnValue?: string
       }
       result: {
-        result?: {
-          resultRows?: unknown[]
-        }
+        dbId: DbId
+        sql: string
+        bind: unknown[]
+        returnValue: string
+        resultRows?: unknown[][]
       }
     }
   }
@@ -61,6 +63,9 @@ declare module '@sqlite.org/sqlite-wasm' {
     result: PromiserMethods[T]['result']
     messageId: string
     dbId: DbId
+    workerReceivedTime: number
+    workerRespondTime: number
+    departureTime: number
   }
 
   type PromiserResponseError = {
@@ -88,4 +93,4 @@ declare module '@sqlite.org/sqlite-wasm' {
   export function sqlite3Worker1Promiser(
     config?: Sqlite3Worker1PromiserConfig | OnreadyFunction,
   ): Promiser
-} 
+}

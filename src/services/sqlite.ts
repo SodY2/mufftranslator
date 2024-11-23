@@ -65,8 +65,8 @@ async function executeQuery<T>(
     if (result.type === 'error')
       throw new Error(result.result.message)
 
-    return returnRows && result.result?.result?.resultRows
-      ? result.result.result.resultRows as T
+    return returnRows && result.result.resultRows
+      ? result.result.resultRows as T
       : result as unknown as T
   }
   catch (err) {

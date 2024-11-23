@@ -12,7 +12,7 @@ export class TestTableRepository {
     const result = await sqliteService.executeWithRows<any[]>(
       'SELECT * FROM test_table',
     )
-    return result.map(row => ({
+    return result?.map(row => ({
       id: row[0],
       name: row[1],
       created_at: row[2],
