@@ -17,4 +17,4 @@ export class QueryError extends DatabaseError {
     super(message, cause)
     this.name = 'QueryError'
   }
-} 
+}

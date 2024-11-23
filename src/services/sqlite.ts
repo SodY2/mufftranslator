@@ -1,9 +1,8 @@
-import type { SQLiteResponse, SQLiteResultRow } from '../types/database'
+import type { SQLiteResultRow } from '../types/database'
+import { databaseConfig } from '@/config/database'
+import { DatabaseError, InitializationError, QueryError } from '@/utils/errors'
 // @ts-expect-error this import is correct
 import { sqlite3Worker1Promiser } from '@sqlite.org/sqlite-wasm'
-import { logger } from '@/utils/logger'
-import { DatabaseError, InitializationError, QueryError } from '@/utils/errors'
-import { databaseConfig } from '@/config/database'
 
 class SQLiteService {
   private promiser: any = null
@@ -11,8 +10,6 @@ class SQLiteService {
 
   async initialize() {
     try {
-      logger.info('Loading and initializing SQLite3 module...')
-
       this.promiser = await new Promise((resolve) => {
         const _promiser = sqlite3Worker1Promiser({
           onready: () => resolve(_promiser),
@@ -20,7 +17,6 @@ class SQLiteService {
       })
 
       const configResponse = await this.promiser('config-get', {})
-      logger.info('Running SQLite3 version', configResponse.result.version.libVersion)
 
       const openResponse = await this.promiser('open', {
         filename: databaseConfig.filename,
@@ -33,11 +29,9 @@ class SQLiteService {
         sql: databaseConfig.tables.test.schema,
       })
 
-      logger.info('Database initialized successfully')
       return true
     }
     catch (err) {
-      logger.error('SQLite initialization error:', err)
       throw new InitializationError('Failed to initialize SQLite database', err)
     }
   }

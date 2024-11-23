@@ -24,4 +24,4 @@ export class TestTableRepository {
   }
 }
 
-export const testTableRepository = new TestTableRepository() 
+export const testTableRepository = new TestTableRepository()
