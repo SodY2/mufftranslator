@@ -17,6 +17,12 @@ const {
   addItem,
   deleteItem,
   toggleSort,
+  rawQuery,
+  queryResult,
+  queryError,
+  executeRawQuery,
+  setExampleQuery,
+  EXAMPLE_QUERIES,
 } = useTestTable()
 
 onMounted(() => {
@@ -34,6 +40,22 @@ function getSortIcon(field: SortField) {
   }
   return sortDirection.value === 'asc' ? '↑' : '↓'
 }
+
+const selectExamples = {
+  selectAll: EXAMPLE_QUERIES.selectAll,
+  recentRecords: EXAMPLE_QUERIES.recentRecords,
+  countAll: EXAMPLE_QUERIES.countAll,
+  nameGroups: EXAMPLE_QUERIES.nameGroups,
+  dateStats: EXAMPLE_QUERIES.dateStats,
+  searchByName: EXAMPLE_QUERIES.searchByName,
+  multipleConditions: EXAMPLE_QUERIES.multipleConditions,
+}
+
+const modifyExamples = {
+  insertRecord: EXAMPLE_QUERIES.insertRecord,
+  updateRecord: EXAMPLE_QUERIES.updateRecord,
+  deleteRecord: EXAMPLE_QUERIES.deleteRecord,
+}
 </script>
 
 <template>
@@ -47,21 +69,62 @@ function getSortIcon(field: SortField) {
     </div>
 
     <div v-if="isInitialized" class="space-y-4">
-      <div class="flex gap-2">
-        <input
-          v-model="newName"
-          type="text"
-          placeholder="Enter a name"
-          class="border p-2 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none w-full"
-          @keyup.enter="handleAddItem"
-        >
-        <button
-          class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50 dark:bg-blue-600 dark:hover:bg-blue-700"
-          :disabled="isLoading"
-          @click="handleAddItem"
-        >
-          {{ isLoading ? 'Loading...' : 'Add' }}
-        </button>
+      <div class="space-y-2">
+        <h2 class="text-xl dark:text-white">Raw SQL Query</h2>
+        
+        <div class="space-y-2">
+          <div>
+            <h3 class="text-sm text-gray-500 dark:text-gray-400 mb-1">Select Examples:</h3>
+            <div class="flex flex-wrap gap-2">
+              <button
+                v-for="(query, key) in selectExamples"
+                :key="key"
+                class="px-3 py-1 text-sm bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-full text-blue-700 dark:text-blue-300"
+                @click="setExampleQuery(query)"
+              >
+                {{ key.replace(/([A-Z])/g, ' $1').toLowerCase() }}
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="text-sm text-gray-500 dark:text-gray-400 mb-1">Modify Data:</h3>
+            <div class="flex flex-wrap gap-2">
+              <button
+                v-for="(query, key) in modifyExamples"
+                :key="key"
+                class="px-3 py-1 text-sm bg-green-50 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-900/50 rounded-full text-green-700 dark:text-green-300"
+                @click="setExampleQuery(query)"
+              >
+                {{ key.replace(/([A-Z])/g, ' $1').toLowerCase() }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex gap-2">
+          <textarea
+            v-model="rawQuery"
+            placeholder="Enter SQL query..."
+            class="border p-2 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none w-full"
+            rows="3"
+          />
+          <button
+            class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 disabled:opacity-50 dark:bg-green-600 dark:hover:bg-green-700 h-fit"
+            :disabled="isLoading"
+            @click="executeRawQuery"
+          >
+            Execute
+          </button>
+        </div>
+        
+        <div v-if="queryError" class="text-red-500">
+          {{ queryError }}
+        </div>
+        
+        <div v-if="queryResult" class="bg-gray-50 dark:bg-gray-700 p-4 rounded overflow-auto">
+          <pre class="text-sm text-gray-900 dark:text-gray-100">{{ JSON.stringify(queryResult, null, 2) }}</pre>
+        </div>
       </div>
 
       <div class="flex gap-2">

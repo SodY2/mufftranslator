@@ -16,7 +16,7 @@ class SQLiteService {
         })
       })
 
-      const configResponse = await this.promiser('config-get', {})
+      await this.promiser('config-get', {})
 
       const openResponse = await this.promiser('open', {
         filename: databaseConfig.filename,
@@ -79,6 +79,25 @@ class SQLiteService {
       'DELETE FROM test_table WHERE id = ?',
       [id],
     )
+  }
+
+  async executeRawQuery(query: string): Promise<any> {
+    if (!this.dbId) {
+      throw new DatabaseError('Database not initialized')
+    }
+
+    try {
+      const result = await this.promiser('exec', {
+        dbId: this.dbId,
+        sql: query,
+        returnValue: 'resultRows',
+      })
+      return result.result.resultRows
+    }
+    catch (err: unknown) {
+      const error = err as Error
+      throw new DatabaseError(`Failed to execute raw query: ${error.message}`)
+    }
   }
 }
 

@@ -22,6 +22,10 @@ export class TestTableRepository {
   async delete(id: number): Promise<void> {
     await sqliteService.deleteData(id)
   }
+
+  async executeRawQuery(query: string): Promise<any> {
+    return await sqliteService.executeRawQuery(query)
+  }
 }
 
 export const testTableRepository = new TestTableRepository()

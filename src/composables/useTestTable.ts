@@ -5,6 +5,19 @@ import { computed, ref } from 'vue'
 export type SortDirection = 'asc' | 'desc'
 export type SortField = 'id' | 'name' | 'created_at'
 
+const EXAMPLE_QUERIES = {
+  selectAll: 'SELECT * FROM test_table',
+  countAll: 'SELECT COUNT(*) as total FROM test_table',
+  recentRecords: 'SELECT * FROM test_table ORDER BY created_at DESC LIMIT 5',
+  nameGroups: 'SELECT name, COUNT(*) as count FROM test_table GROUP BY name',
+  dateStats: 'SELECT strftime(\'%Y-%m-%d\', created_at) as date, COUNT(*) as count FROM test_table GROUP BY date',
+  insertRecord: 'INSERT INTO test_table (name) VALUES (\'New Item\')',
+  updateRecord: 'UPDATE test_table SET name = \'Updated Name\' WHERE id = 1',
+  deleteRecord: 'DELETE FROM test_table WHERE id = 1',
+  searchByName: 'SELECT * FROM test_table WHERE name LIKE \'%test%\'',
+  multipleConditions: 'SELECT * FROM test_table WHERE id > 5 AND name LIKE \'A%\'',
+} as const
+
 export function useTestTable() {
   const isInitialized = ref(false)
   const items = ref<TestTableRow[]>([])
@@ -13,6 +26,9 @@ export function useTestTable() {
   const searchQuery = ref('')
   const sortField = ref<SortField>('id')
   const sortDirection = ref<SortDirection>('asc')
+  const rawQuery = ref('')
+  const queryResult = ref<any>(null)
+  const queryError = ref<string | null>(null)
 
   const filteredAndSortedItems = computed(() => {
     let result = [...items.value]
@@ -116,6 +132,34 @@ export function useTestTable() {
     error.value = null
   }
 
+  async function executeRawQuery() {
+    try {
+      queryError.value = null
+      isLoading.value = true
+      queryResult.value = await testTableRepository.executeRawQuery(rawQuery.value)
+      
+      // Automatically refresh the table if the query modifies data
+      const lowerQuery = rawQuery.value.toLowerCase().trim()
+      if (lowerQuery.startsWith('insert') || 
+          lowerQuery.startsWith('update') || 
+          lowerQuery.startsWith('delete')) {
+        await loadItems()
+      }
+    }
+    catch (err: unknown) {
+      const error = err as Error
+      queryError.value = error.message
+      queryResult.value = null
+    }
+    finally {
+      isLoading.value = false
+    }
+  }
+
+  function setExampleQuery(query: string) {
+    rawQuery.value = query
+  }
+
   return {
     isInitialized,
     items: filteredAndSortedItems,
@@ -130,5 +174,11 @@ export function useTestTable() {
     deleteItem,
     toggleSort,
     clearError,
+    rawQuery,
+    queryResult,
+    queryError,
+    executeRawQuery,
+    setExampleQuery,
+    EXAMPLE_QUERIES,
   }
 }
