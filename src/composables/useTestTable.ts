@@ -5,7 +5,7 @@ import { computed, ref } from 'vue'
 export type SortDirection = 'asc' | 'desc'
 export type SortField = 'id' | 'name' | 'created_at'
 
-const EXAMPLE_QUERIES = {
+export const EXAMPLE_QUERIES = {
   selectAll: 'SELECT * FROM test_table',
   countAll: 'SELECT COUNT(*) as total FROM test_table',
   recentRecords: 'SELECT * FROM test_table ORDER BY created_at DESC LIMIT 5',
@@ -33,7 +33,6 @@ export function useTestTable() {
   const filteredAndSortedItems = computed(() => {
     let result = [...items.value]
 
-    // Apply search filter
     if (searchQuery.value) {
       const query = searchQuery.value.toLowerCase()
       result = result.filter(item =>
@@ -42,27 +41,12 @@ export function useTestTable() {
       )
     }
 
-    // Apply sorting
-    result.sort((a, b) => {
-      const aValue = a[sortField.value]
-      const bValue = b[sortField.value]
-
-      if (typeof aValue === 'string' && typeof bValue === 'string') {
-        return sortDirection.value === 'asc'
-          ? aValue.localeCompare(bValue)
-          : bValue.localeCompare(aValue)
-      }
-
-      return sortDirection.value === 'asc'
-        ? Number(aValue) - Number(bValue)
-        : Number(bValue) - Number(aValue)
-    })
-
-    return result
+    return testTableRepository.sortItems(result, sortField.value, sortDirection.value)
   })
 
   async function initialize() {
     try {
+      isLoading.value = true
       isInitialized.value = await testTableRepository.initialize()
       if (isInitialized.value)
         await loadItems()
@@ -71,6 +55,9 @@ export function useTestTable() {
     }
     catch (e) {
       error.value = `Failed to initialize database: ${(e as Error).message}`
+    }
+    finally {
+      isLoading.value = false
     }
   }
 
@@ -87,31 +74,20 @@ export function useTestTable() {
     }
   }
 
-  async function addItem(name: string) {
-    if (!name.trim())
-      return
-
+  async function executeRawQuery() {
     try {
+      queryError.value = null
       isLoading.value = true
-      await testTableRepository.create(name)
-      await loadItems()
-    }
-    catch (e) {
-      error.value = `Failed to add item: ${(e as Error).message}`
-    }
-    finally {
-      isLoading.value = false
-    }
-  }
 
-  async function deleteItem(id: number) {
-    try {
-      isLoading.value = true
-      await testTableRepository.delete(id)
-      await loadItems()
+      const result = await testTableRepository.executeRawQuery(rawQuery.value)
+      queryResult.value = result
+
+      if (testTableRepository.isModificationQuery(rawQuery.value))
+        await loadItems()
     }
-    catch (e) {
-      error.value = `Failed to delete item: ${(e as Error).message}`
+    catch (err: unknown) {
+      queryError.value = (err as Error).message
+      queryResult.value = null
     }
     finally {
       isLoading.value = false
@@ -128,34 +104,6 @@ export function useTestTable() {
     }
   }
 
-  function clearError() {
-    error.value = null
-  }
-
-  async function executeRawQuery() {
-    try {
-      queryError.value = null
-      isLoading.value = true
-      queryResult.value = await testTableRepository.executeRawQuery(rawQuery.value)
-      
-      // Automatically refresh the table if the query modifies data
-      const lowerQuery = rawQuery.value.toLowerCase().trim()
-      if (lowerQuery.startsWith('insert') || 
-          lowerQuery.startsWith('update') || 
-          lowerQuery.startsWith('delete')) {
-        await loadItems()
-      }
-    }
-    catch (err: unknown) {
-      const error = err as Error
-      queryError.value = error.message
-      queryResult.value = null
-    }
-    finally {
-      isLoading.value = false
-    }
-  }
-
   function setExampleQuery(query: string) {
     rawQuery.value = query
   }
@@ -168,15 +116,14 @@ export function useTestTable() {
     searchQuery,
     sortField,
     sortDirection,
-    initialize,
-    loadItems,
-    addItem,
-    deleteItem,
-    toggleSort,
-    clearError,
     rawQuery,
     queryResult,
     queryError,
+    initialize,
+    loadItems,
+    addItem: testTableRepository.create,
+    deleteItem: testTableRepository.delete,
+    toggleSort,
     executeRawQuery,
     setExampleQuery,
     EXAMPLE_QUERIES,

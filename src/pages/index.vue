@@ -14,7 +14,6 @@ const {
   sortField,
   sortDirection,
   initialize,
-  addItem,
   deleteItem,
   toggleSort,
   rawQuery,
@@ -28,11 +27,6 @@ const {
 onMounted(() => {
   initialize()
 })
-
-async function handleAddItem() {
-  await addItem(newName.value)
-  newName.value = ''
-}
 
 function getSortIcon(field: SortField) {
   if (sortField.value !== field) {
@@ -70,11 +64,15 @@ const modifyExamples = {
 
     <div v-if="isInitialized" class="space-y-4">
       <div class="space-y-2">
-        <h2 class="text-xl dark:text-white">Raw SQL Query</h2>
-        
+        <h2 class="text-xl dark:text-white">
+          Raw SQL Query
+        </h2>
+
         <div class="space-y-2">
           <div>
-            <h3 class="text-sm text-gray-500 dark:text-gray-400 mb-1">Select Examples:</h3>
+            <h3 class="text-sm text-gray-500 dark:text-gray-400 mb-1">
+              Select Examples:
+            </h3>
             <div class="flex flex-wrap gap-2">
               <button
                 v-for="(query, key) in selectExamples"
@@ -88,7 +86,9 @@ const modifyExamples = {
           </div>
 
           <div>
-            <h3 class="text-sm text-gray-500 dark:text-gray-400 mb-1">Modify Data:</h3>
+            <h3 class="text-sm text-gray-500 dark:text-gray-400 mb-1">
+              Modify Data:
+            </h3>
             <div class="flex flex-wrap gap-2">
               <button
                 v-for="(query, key) in modifyExamples"
@@ -117,11 +117,11 @@ const modifyExamples = {
             Execute
           </button>
         </div>
-        
+
         <div v-if="queryError" class="text-red-500">
           {{ queryError }}
         </div>
-        
+
         <div v-if="queryResult" class="bg-gray-50 dark:bg-gray-700 p-4 rounded overflow-auto">
           <pre class="text-sm text-gray-900 dark:text-gray-100">{{ JSON.stringify(queryResult, null, 2) }}</pre>
         </div>

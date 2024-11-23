@@ -1,4 +1,3 @@
-import type { SQLiteResultRow } from '../types/database'
 import { databaseConfig } from '@/config/database'
 import { DatabaseError, InitializationError, QueryError } from '@/utils/errors'
 // @ts-expect-error this import is correct
@@ -58,46 +57,12 @@ class SQLiteService {
     }
   }
 
-  async insertData(name: string): Promise<boolean> {
-    await this.executeQuery(
-      'INSERT INTO test_table (name) VALUES (?)',
-      [name],
-    )
-    return true
+  async execute(sql: string, params: any[] = []): Promise<any> {
+    return await this.executeQuery(sql, params)
   }
 
-  async getData(): Promise<SQLiteResultRow[]> {
-    return await this.executeQuery<SQLiteResultRow[]>(
-      'SELECT * FROM test_table',
-      [],
-      true,
-    )
-  }
-
-  async deleteData(id: number): Promise<void> {
-    await this.executeQuery(
-      'DELETE FROM test_table WHERE id = ?',
-      [id],
-    )
-  }
-
-  async executeRawQuery(query: string): Promise<any> {
-    if (!this.dbId) {
-      throw new DatabaseError('Database not initialized')
-    }
-
-    try {
-      const result = await this.promiser('exec', {
-        dbId: this.dbId,
-        sql: query,
-        returnValue: 'resultRows',
-      })
-      return result.result.resultRows
-    }
-    catch (err: unknown) {
-      const error = err as Error
-      throw new DatabaseError(`Failed to execute raw query: ${error.message}`)
-    }
+  async executeWithRows<T>(sql: string, params: any[] = []): Promise<T> {
+    return await this.executeQuery<T>(sql, params, true)
   }
 }
 
