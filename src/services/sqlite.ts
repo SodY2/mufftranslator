@@ -75,6 +75,20 @@ class SQLiteService {
       return []
     }
   }
+
+  async deleteData(id: number): Promise<void> {
+    try {
+      await this.promiser('exec', {
+        dbId: this.dbId,
+        sql: 'DELETE FROM test_table WHERE id = ?',
+        bind: [id],
+      })
+    }
+    catch (err) {
+      console.error('Error deleting data:', err)
+      throw new Error(`Failed to delete: ${err}`)
+    }
+  }
 }
 
 export const sqliteService = new SQLiteService()

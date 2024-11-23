@@ -18,6 +18,10 @@ export class TestTableRepository {
   async create(name: string): Promise<void> {
     await sqliteService.insertData(name)
   }
+
+  async delete(id: number): Promise<void> {
+    await sqliteService.deleteData(id)
+  }
 }
 
 export const testTableRepository = new TestTableRepository() 
