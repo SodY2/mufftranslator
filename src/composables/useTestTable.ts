@@ -1,6 +1,6 @@
 import type { TestTableRow } from '@/types/database'
 import { testTableRepository } from '@/repositories/testTableRepository'
-import { ref, computed } from 'vue'
+import { computed, ref } from 'vue'
 
 export type SortDirection = 'asc' | 'desc'
 export type SortField = 'id' | 'name' | 'created_at'
@@ -20,9 +20,9 @@ export function useTestTable() {
     // Apply search filter
     if (searchQuery.value) {
       const query = searchQuery.value.toLowerCase()
-      result = result.filter(item => 
-        item.name.toLowerCase().includes(query) ||
-        item.id.toString().includes(query)
+      result = result.filter(item =>
+        item.name.toLowerCase().includes(query)
+        || item.id.toString().includes(query),
       )
     }
 
@@ -30,13 +30,13 @@ export function useTestTable() {
     result.sort((a, b) => {
       const aValue = a[sortField.value]
       const bValue = b[sortField.value]
-      
+
       if (typeof aValue === 'string' && typeof bValue === 'string') {
-        return sortDirection.value === 'asc' 
+        return sortDirection.value === 'asc'
           ? aValue.localeCompare(bValue)
           : bValue.localeCompare(aValue)
       }
-      
+
       return sortDirection.value === 'asc'
         ? Number(aValue) - Number(bValue)
         : Number(bValue) - Number(aValue)
