@@ -16,4 +16,13 @@ export default defineConfig(({ command }) => ({
     },
   },
   base: command === 'build' ? '/starter-vue/' : '/',
+  server: {
+    headers: {
+      'Cross-Origin-Opener-Policy': 'same-origin',
+      'Cross-Origin-Embedder-Policy': 'require-corp',
+    },
+  },
+  optimizeDeps: {
+    exclude: ['@sqlite.org/sqlite-wasm'],
+  },
 }))
