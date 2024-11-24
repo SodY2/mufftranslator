@@ -68,14 +68,9 @@ export function useSQLite() {
     }
   }
 
-  async function executeQuery<T>(
-    sql: string,
-    params: unknown[] = [],
-    returnRows = false,
-  ) {
+  async function executeQuery(sql: string, params: unknown[] = []) {
     if (!dbId || !promiser) {
-      error.value = new DatabaseError('Database not initialized')
-      throw error.value
+      await initialize()
     }
 
     isLoading.value = true
@@ -84,19 +79,17 @@ export function useSQLite() {
     try {
       log('Executing query:', sql, 'with params:', params)
 
-      const result = await promiser('exec', {
+      const result = await promiser!('exec', {
         dbId: dbId as DbId,
         sql,
         bind: params,
-        ...(returnRows && { returnValue: 'resultRows' }),
+        returnValue: 'resultRows',
       })
 
       if (result.type === 'error')
         throw new Error(result.result.message)
 
-      return returnRows && result.result.resultRows
-        ? result.result.resultRows as T
-        : result as unknown as T
+      return result
     }
     catch (err) {
       error.value = new QueryError('Query execution failed', sql, err)
@@ -107,25 +100,10 @@ export function useSQLite() {
     }
   }
 
-  async function executeMutation(sql: string, params: unknown[] = []) {
-    return await executeQuery(sql, params)
-  }
-
-  async function executeSelect<T>(sql: string, params: unknown[] = []): Promise<T> {
-    const result = await executeQuery<T>(sql, params, true)
-    if (!result) {
-      error.value = new QueryError('No results returned from query', sql)
-      throw error.value
-    }
-    return result as T
-  }
-
   return {
     isLoading,
     error,
     isInitialized,
-    initialize,
-    executeMutation,
-    executeSelect,
+    executeQuery,
   }
 }
