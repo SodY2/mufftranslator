@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import type { SortField } from '@/composables/useTestTable'
+import type { TestTableRow } from '@/types/database'
 import { formatDate } from '@/utils/dateFormatter'
 
 defineProps<{
-  items: Array<{ id: number, name: string, created_at: Date }>
+  items: Array<TestTableRow>
   isLoading: boolean
   sortField: SortField
   sortDirection: 'asc' | 'desc'
