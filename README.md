@@ -30,17 +30,20 @@ A modern Vue.js application demonstrating how to use SQLite in the browser throu
 ## Getting Started
 
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/your-username/vue-sqlite-playground.git
    cd vue-sqlite-playground
    ```
 
 2. Install dependencies:
+
    ```bash
    npm install
    ```
 
 3. Start the development server:
+
    ```bash
    npm run dev
    ```
@@ -79,6 +82,7 @@ A modern Vue.js application demonstrating how to use SQLite in the browser throu
 ## Browser Support
 
 This application requires a modern browser with support for:
+
 - WebAssembly
 - Web Workers
 - Origin Private File System (OPFS)
@@ -101,6 +105,7 @@ CREATE TABLE IF NOT EXISTS test_table (
 ### Architecture
 
 The application uses a layered architecture:
+
 - Service Layer: Handles SQLite initialization and core operations
 - Repository Layer: Provides data access methods
 - Composables: Vue-specific database interaction hooks
