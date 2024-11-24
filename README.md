@@ -1,5 +1,7 @@
 # Vue 3 SQLite Playground
 
+![Vue SQLite Playground](./public/vue-3-playground.png)
+
 A modern Vue.js application demonstrating how to use SQLite in the browser through WebAssembly. This project showcases building offline-capable applications with a real SQL database running entirely in the browser.
 
 ## Features
