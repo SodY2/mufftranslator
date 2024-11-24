@@ -1,43 +1,20 @@
 <script setup lang="ts">
 import { useSQLite } from '@/composables/useSQLite'
-import { onMounted, ref } from 'vue'
+import { ref } from 'vue'
 
 const { isLoading, error, executeQuery } = useSQLite()
-
 const sqlQuery = ref('SELECT * FROM test_table')
 const queryResult = ref<any[]>([])
 const queryError = ref<string | null>(null)
 
 const exampleQueries = [
-  {
-    title: 'Select all records',
-    query: 'SELECT * FROM test_table',
-  },
-  {
-    title: 'Insert a new record',
-    query: 'INSERT INTO test_table (name) VALUES (\'New Test Item\')',
-  },
-  {
-    title: 'Update records',
-    query: 'UPDATE test_table SET name = \'Updated Item\' WHERE name LIKE \'New%\'',
-  },
-  {
-    title: 'Delete records',
-    query: 'DELETE FROM test_table WHERE name = \'Updated Item\'',
-  },
-  {
-    title: 'Filter and sort',
-    query: 'SELECT * FROM test_table ORDER BY created_at DESC',
-  },
-  {
-    title: 'Complex query',
-    query: 'SELECT name, created_at FROM test_table WHERE created_at > date(\'now\', \'-1 day\')',
-  },
+  { title: 'Select all', query: 'SELECT * FROM test_table' },
+  { title: 'Insert', query: 'INSERT INTO test_table (name) VALUES (\'New Test Item\')' },
+  { title: 'Update', query: 'UPDATE test_table SET name = \'Updated Item\' WHERE name LIKE \'New%\'' },
+  { title: 'Delete', query: 'DELETE FROM test_table WHERE name = \'Updated Item\'' },
+  { title: 'Sort', query: 'SELECT * FROM test_table ORDER BY created_at DESC' },
+  { title: 'Filter', query: 'SELECT * FROM test_table WHERE created_at > date(\'now\', \'-1 day\')' },
 ]
-
-function setExampleQuery(query: string) {
-  sqlQuery.value = query
-}
 
 async function runQuery() {
   queryError.value = null
@@ -48,11 +25,10 @@ async function runQuery() {
     const isSelect = sqlQuery.value.trim().toLowerCase().startsWith('select')
 
     if (isSelect) {
-      queryResult.value = (result?.result.resultRows || []) as any[]
+      queryResult.value = result?.result.resultRows || []
     }
     else {
-      const selectResult = await executeQuery('SELECT * FROM test_table')
-      queryResult.value = (selectResult?.result.resultRows || []) as any[]
+      queryResult.value = (await executeQuery('SELECT * FROM test_table'))?.result.resultRows || []
     }
   }
   catch (err) {
@@ -75,12 +51,9 @@ async function runQuery() {
         <button
           v-for="example in exampleQueries"
           :key="example.title"
-          class="px-3 py-1 text-sm rounded-full
-            bg-gray-100 hover:bg-gray-200
-            dark:bg-gray-800 dark:hover:bg-gray-700
-            text-gray-700 dark:text-gray-300
-            transition-colors duration-200"
-          @click="setExampleQuery(example.query)"
+          class="px-3 py-1 text-sm rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-800
+            dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors duration-200"
+          @click="sqlQuery = example.query"
         >
           {{ example.title }}
         </button>
@@ -89,8 +62,7 @@ async function runQuery() {
         The test_table has columns:<br>
         - id (INTEGER PRIMARY KEY AUTOINCREMENT)<br>
         - name (TEXT NOT NULL)<br>
-        - created_at (TIMESTAMP DEFAULT CURRENT_TIMESTAMP)<br>
-        Click on an example query above or write your own query below.
+        - created_at (TIMESTAMP DEFAULT CURRENT_TIMESTAMP)
       </p>
     </div>
 
@@ -101,24 +73,15 @@ async function runQuery() {
           rows="4"
           placeholder="Enter your SQL query here..."
           :disabled="isLoading"
-          class="w-full px-4 py-3 rounded-lg font-mono text-sm
-            bg-white dark:bg-gray-800
-            text-gray-900 dark:text-gray-100
-            border border-gray-300 dark:border-gray-700
-            focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-600
-            focus:border-primary-500 dark:focus:border-primary-600
-            disabled:bg-gray-100 dark:disabled:bg-gray-900
-            disabled:cursor-not-allowed
+          class="w-full px-4 py-3 rounded-lg font-mono text-sm bg-white dark:bg-gray-800
+            text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700
+            focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:bg-gray-100
             transition-colors duration-200"
         />
         <button
           :disabled="isLoading"
-          class="px-4 py-2 rounded-lg text-sm font-medium text-white
-            bg-primary-600 hover:bg-primary-700
-            dark:bg-primary-700 dark:hover:bg-primary-800
-            disabled:bg-gray-400 dark:disabled:bg-gray-700
-            disabled:cursor-not-allowed
-            transition-colors duration-200"
+          class="px-4 py-2 rounded-lg text-sm font-medium text-white bg-primary-600
+            hover:bg-primary-700 disabled:bg-gray-400 transition-colors duration-200"
           @click="runQuery"
         >
           {{ isLoading ? 'Running...' : 'Run Query' }}
@@ -127,9 +90,7 @@ async function runQuery() {
 
       <div
         v-if="error || queryError"
-        class="p-4 rounded-lg
-          bg-red-50 dark:bg-red-900/20
-          text-red-600 dark:text-red-400
+        class="p-4 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600
           border border-red-200 dark:border-red-800"
       >
         {{ error?.message || queryError }}
@@ -146,26 +107,23 @@ async function runQuery() {
                 <th
                   v-for="column in Object.keys(queryResult[0])"
                   :key="column"
-                  class="px-4 py-3 text-left text-sm font-medium
-                    text-gray-900 dark:text-gray-200
-                    border-b border-gray-200 dark:border-gray-700"
+                  class="px-4 py-3 text-left text-sm font-medium text-gray-900
+                    dark:text-gray-200 border-b border-gray-200"
                 >
                   {{ column }}
                 </th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody class="divide-y divide-gray-200">
               <tr
                 v-for="(row, index) in queryResult"
                 :key="index"
-                class="bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800/50
-                  transition-colors duration-150"
+                class="bg-white dark:bg-gray-900 hover:bg-gray-50 transition-colors duration-150"
               >
                 <td
                   v-for="column in Object.keys(row)"
                   :key="column"
-                  class="px-4 py-3 text-sm whitespace-nowrap
-                    text-gray-900 dark:text-gray-300"
+                  class="px-4 py-3 text-sm whitespace-nowrap text-gray-900 dark:text-gray-300"
                 >
                   {{ row[column] }}
                 </td>

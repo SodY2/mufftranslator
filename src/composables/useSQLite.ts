@@ -1,6 +1,6 @@
 import type { DbId } from '@sqlite.org/sqlite-wasm'
 import { databaseConfig } from '@/config/database'
-import { DatabaseError, InitializationError, QueryError } from '@/utils/errors'
+import { InitializationError, QueryError } from '@/utils/errors'
 import { sqlite3Worker1Promiser } from '@sqlite.org/sqlite-wasm'
 import { ref } from 'vue'
 
@@ -9,16 +9,28 @@ const isInitialized = ref(false)
 export function useSQLite() {
   const isLoading = ref(false)
   const error = ref<Error | null>(null)
-
   let promiser: ReturnType<typeof sqlite3Worker1Promiser> | null = null
   let dbId: string | null = null
 
-  function log(...args: unknown[]) {
-    /* eslint-disable-next-line no-console */
-    console.log(...args)
+  // eslint-disable-next-line no-console
+  const log = (...args: unknown[]) => console.log(...args)
+
+  const initializePromiser = async () => {
+    return new Promise<ReturnType<typeof sqlite3Worker1Promiser>>((resolve) => {
+      const _promiser = sqlite3Worker1Promiser({
+        onready: () => resolve(_promiser),
+      })
+    })
   }
 
-  async function initialize() {
+  const openDatabase = async (p: ReturnType<typeof sqlite3Worker1Promiser>) => {
+    const response = await p('open', { filename: databaseConfig.filename })
+    if (response.type === 'error')
+      throw new Error(response.result.message)
+    return response.result.dbId as string
+  }
+
+  const initialize = async () => {
     if (isInitialized.value)
       return true
 
@@ -27,31 +39,14 @@ export function useSQLite() {
 
     try {
       log('Initializing SQLite database...')
-      promiser = await new Promise((resolve) => {
-        const _promiser = sqlite3Worker1Promiser({
-          onready: () => resolve(_promiser),
-        })
-      })
-
-      if (!promiser) {
+      promiser = await initializePromiser()
+      if (!promiser)
         throw new Error('Failed to initialize promiser')
-      }
 
-      log('Promiser initialized, getting config...')
       await promiser('config-get', {})
-
-      const openResponse = await promiser('open', {
-        filename: databaseConfig.filename,
-      })
-
-      if (openResponse.type === 'error') {
-        throw new Error(openResponse.result.message)
-      }
-
-      dbId = openResponse.result.dbId as string
+      dbId = await openDatabase(promiser)
       log('Database opened successfully with ID:', dbId)
 
-      log('Creating test table...')
       await promiser('exec', {
         dbId,
         sql: databaseConfig.tables.test.schema,
@@ -69,17 +64,15 @@ export function useSQLite() {
     }
   }
 
-  async function executeQuery(sql: string, params: unknown[] = []) {
-    if (!dbId || !promiser) {
+  const executeQuery = async (sql: string, params: unknown[] = []) => {
+    if (!dbId || !promiser)
       await initialize()
-    }
 
     isLoading.value = true
     error.value = null
 
     try {
       log('Executing query:', sql, 'with params:', params)
-
       const result = await promiser!('exec', {
         dbId: dbId as DbId,
         sql,
