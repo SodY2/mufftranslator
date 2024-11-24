@@ -4,10 +4,11 @@ import { DatabaseError, InitializationError, QueryError } from '@/utils/errors'
 import { sqlite3Worker1Promiser } from '@sqlite.org/sqlite-wasm'
 import { ref } from 'vue'
 
+const isInitialized = ref(false)
+
 export function useSQLite() {
   const isLoading = ref(false)
   const error = ref<Error | null>(null)
-  const isInitialized = ref(false)
 
   let promiser: ReturnType<typeof sqlite3Worker1Promiser> | null = null
   let dbId: string | null = null
@@ -85,6 +86,7 @@ export function useSQLite() {
         bind: params,
         returnValue: 'resultRows',
       })
+      log('Query result:', result)
 
       if (result.type === 'error')
         throw new Error(result.result.message)

@@ -8,6 +8,37 @@ const sqlQuery = ref('SELECT * FROM test_table')
 const queryResult = ref<any[]>([])
 const queryError = ref<string | null>(null)
 
+const exampleQueries = [
+  {
+    title: 'Select all records',
+    query: 'SELECT * FROM test_table',
+  },
+  {
+    title: 'Insert a new record',
+    query: 'INSERT INTO test_table (name) VALUES (\'New Test Item\')',
+  },
+  {
+    title: 'Update records',
+    query: 'UPDATE test_table SET name = \'Updated Item\' WHERE name LIKE \'New%\'',
+  },
+  {
+    title: 'Delete records',
+    query: 'DELETE FROM test_table WHERE name = \'Updated Item\'',
+  },
+  {
+    title: 'Filter and sort',
+    query: 'SELECT * FROM test_table ORDER BY created_at DESC',
+  },
+  {
+    title: 'Complex query',
+    query: 'SELECT name, created_at FROM test_table WHERE created_at > date(\'now\', \'-1 day\')',
+  },
+]
+
+function setExampleQuery(query: string) {
+  sqlQuery.value = query
+}
+
 async function runQuery() {
   queryError.value = null
   queryResult.value = []
@@ -20,7 +51,7 @@ async function runQuery() {
       queryResult.value = (result?.result.resultRows || []) as any[]
     }
     else {
-      const selectResult = await executeQuery('SELECT * FROM test')
+      const selectResult = await executeQuery('SELECT * FROM test_table')
       queryResult.value = (selectResult?.result.resultRows || []) as any[]
     }
   }
@@ -35,6 +66,33 @@ async function runQuery() {
     <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
       SQLite Playground
     </h2>
+
+    <div class="mt-4 space-y-2">
+      <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300">
+        Example Queries:
+      </h3>
+      <div class="flex flex-wrap gap-2">
+        <button
+          v-for="example in exampleQueries"
+          :key="example.title"
+          class="px-3 py-1 text-sm rounded-full
+            bg-gray-100 hover:bg-gray-200
+            dark:bg-gray-800 dark:hover:bg-gray-700
+            text-gray-700 dark:text-gray-300
+            transition-colors duration-200"
+          @click="setExampleQuery(example.query)"
+        >
+          {{ example.title }}
+        </button>
+      </div>
+      <p class="text-sm text-gray-600 dark:text-gray-400">
+        The test_table has columns:<br>
+        - id (INTEGER PRIMARY KEY AUTOINCREMENT)<br>
+        - name (TEXT NOT NULL)<br>
+        - created_at (TIMESTAMP DEFAULT CURRENT_TIMESTAMP)<br>
+        Click on an example query above or write your own query below.
+      </p>
+    </div>
 
     <div class="mt-6 space-y-4">
       <div class="space-y-2">
