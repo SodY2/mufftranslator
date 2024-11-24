@@ -1,35 +1,62 @@
 import type { SortDirection, SortField } from '@/composables/useTestTable'
 import type { TestTableRow } from '@/types/database'
-import { sqliteService } from '@/services/sqlite'
+import { useSQLite } from '@/composables/useSQLite'
 import { DatabaseError } from '@/utils/errors'
+import { ref } from 'vue'
 
 export function createTestTableRepository() {
+  const sqlite = useSQLite()
+  const isLoading = ref(false)
+  const error = ref<Error | null>(null)
+
   async function initialize(): Promise<boolean> {
-    return await sqliteService.initialize()
+    error.value = null
+    isLoading.value = true
+    try {
+      return await sqlite.initialize()
+    }
+    catch (err) {
+      error.value = err as Error
+      throw error.value
+    }
+    finally {
+      isLoading.value = false
+    }
   }
 
   async function getAll(): Promise<TestTableRow[]> {
-    const result = await sqliteService.executeWithRows<any[]>(
-      'SELECT * FROM test_table',
-    )
-    return result?.map(row => ({
-      id: row[0],
-      name: row[1],
-      created_at: row[2],
-    }))
+    error.value = null
+    isLoading.value = true
+    try {
+      const result = await sqlite.executeSelect<any[]>(
+        'SELECT * FROM test_table',
+      )
+      return result?.map((row: any) => ({
+        id: row[0],
+        name: row[1],
+        created_at: row[2],
+      }))
+    }
+    catch (err) {
+      error.value = err as Error
+      throw error.value
+    }
+    finally {
+      isLoading.value = false
+    }
   }
 
   async function create(name: string): Promise<void> {
     if (!name.trim())
       throw new Error('Name cannot be empty')
-    await sqliteService.execute(
+    await sqlite.executeMutation(
       'INSERT INTO test_table (name) VALUES (?)',
       [name],
     )
   }
 
   async function delete_(id: number): Promise<void> {
-    await sqliteService.execute(
+    await sqlite.executeMutation(
       'DELETE FROM test_table WHERE id = ?',
       [id],
     )
@@ -37,7 +64,7 @@ export function createTestTableRepository() {
 
   async function executeRawQuery(query: string): Promise<any> {
     try {
-      return await sqliteService.executeWithRows(query)
+      return await sqlite.executeSelect(query)
     }
     catch (err: unknown) {
       const error = err as Error
@@ -72,6 +99,8 @@ export function createTestTableRepository() {
   }
 
   return {
+    isLoading,
+    error,
     initialize,
     getAll,
     create,
