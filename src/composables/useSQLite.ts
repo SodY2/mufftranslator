@@ -1,14 +1,28 @@
 import type { DbId } from '@sqlite.org/sqlite-wasm'
-import { databaseConfig } from '@/config/database'
-import { InitializationError, QueryError } from '@/utils/errors'
 import { sqlite3Worker1Promiser } from '@sqlite.org/sqlite-wasm'
 import { ref } from 'vue'
+
+const databaseConfig = {
+  filename: 'file:mydb.sqlite3?vfs=opfs',
+  tables: {
+    test: {
+      name: 'test_table',
+      schema: `
+          CREATE TABLE IF NOT EXISTS test_table (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          );
+        `,
+    },
+  },
+} as const
 
 const isInitialized = ref(false)
 
 export function useSQLite() {
   const isLoading = ref(false)
-  const error = ref<Error | null>(null)
+  const error = ref<string | null>(null)
   let promiser: ReturnType<typeof sqlite3Worker1Promiser> | null = null
   let dbId: string | null = null
 
@@ -56,7 +70,9 @@ export function useSQLite() {
       return true
     }
     catch (err) {
-      error.value = new InitializationError('Failed to initialize SQLite database', err)
+      error.value = err instanceof Error
+        ? `Failed to initialize SQLite database: ${err.message}`
+        : 'Failed to initialize SQLite database'
       throw error.value
     }
     finally {
@@ -87,7 +103,9 @@ export function useSQLite() {
       return result
     }
     catch (err) {
-      error.value = new QueryError('Query execution failed', sql, err)
+      error.value = err instanceof Error
+        ? `Query execution failed: ${err.message}`
+        : 'Query execution failed'
       throw error.value
     }
     finally {
