@@ -50,18 +50,6 @@ A modern Vue.js application demonstrating how to use SQLite in the browser throu
 
 4. Open your browser and visit `http://localhost:5173`
 
-## Project Structure
-
-```
-├── src/
-│   ├── components/     # Vue components
-│   ├── composables/    # SQLite-related composables
-│   ├── config/         # Database configuration
-│   ├── services/       # SQLite service layer
-│   ├── repositories/   # Data access layer
-│   ├── types/         # TypeScript definitions
-│   └── utils/         # Helper utilities
-```
 
 ## Features Demo
 
@@ -101,14 +89,6 @@ CREATE TABLE IF NOT EXISTS test_table (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
-
-### Architecture
-
-The application uses a layered architecture:
-
-- Service Layer: Handles SQLite initialization and core operations
-- Repository Layer: Provides data access methods
-- Composables: Vue-specific database interaction hooks
 
 ## Contributing
 
