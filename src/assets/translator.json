@@ -1,10 +1,82 @@
 [
     {
-        "name" : "test",
-        "t_name" : "test2"
+        "name" : "sehr",
+        "t_name" : "sähr"
     },
      {
-        "name" : "foo",
-        "t_name" : "bar"
+        "name" : "gut",
+        "t_name" : "guht"
+    },
+     {
+        "name" : "hoffentlich",
+        "t_name" : "hoffindlich"
+    },
+     {
+        "name" : "melden",
+        "t_name" : "mäldin"
+    },
+     {
+        "name" : "wenn",
+        "t_name" : "wänn"
+    },
+     {
+        "name" : "brauchen",
+        "t_name" : "brauchän"
+    },
+     {
+        "name" : "vielen",
+        "t_name" : "viehlen"
+    },
+     {
+        "name" : "freut",
+        "t_name" : "fräuht"
+    },
+     {
+        "name" : "kommen",
+        "t_name" : "komen"
+    },
+     {
+        "name" : "gerne",
+        "t_name" : "gärne"
+    },
+     {
+        "name" : "vorbei",
+        "t_name" : "vorbai"
+    },
+     {
+        "name" : "hab",
+        "t_name" : "hap"
+    },
+     {
+        "name" : "sind",
+        "t_name" : "sint"
+    },
+     {
+        "name" : "jetzt",
+        "t_name" : "jäzt"
+    },
+     {
+        "name" : "unterwegs",
+        "t_name" : "unterwägs"
+    },
+     {
+        "name" : "treffen",
+        "t_name" : "träffin"
+    },
+     {
+        "name" : "wir",
+        "t_name" : "wia"
+    },
+     {
+        "name" : "bald",
+        "t_name" : "balt"
+    },
+     {
+        "name" : "sind",
+        "t_name" : "sint"
+    },
+     {
+        "name" : "mich",
+        "t_name" : "misch"
     }
 ]
