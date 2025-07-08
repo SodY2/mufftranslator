@@ -22,13 +22,7 @@ const toggleDark = useToggle(isDark)
             >
               Home
             </RouterLink>
-            <RouterLink
-              to="/about"
-              class="text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium"
-              :class="{ 'text-primary-600 dark:text-primary-400': $route.path === '/about' }"
-            >
-              About
-            </RouterLink>
+          
             <button
               class="text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium"
               @click="toggleDark()"

@@ -1,0 +1,10 @@
+[
+    {
+        "name" : "test",
+        "t_name" : "test2"
+    },
+     {
+        "name" : "foo",
+        "t_name" : "bar"
+    }
+]
