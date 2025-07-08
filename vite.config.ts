@@ -15,7 +15,7 @@ export default defineConfig(({ command }) => ({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
-  base: command === 'build' ? '/starter-vue/' : '/',
+  base: command === 'build' ? '/mufftranslator/' : '/',
   server: {
     headers: {
       'Cross-Origin-Opener-Policy': 'same-origin',
