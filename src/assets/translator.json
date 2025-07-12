@@ -78,5 +78,41 @@
      {
         "name" : "mich",
         "t_name" : "misch"
+    },
+     {
+        "name" : "bei ",
+        "t_name" : "bai"
+    },
+     {
+        "name" : "ihnen",
+        "t_name" : "inen"
+    },
+     {
+        "name" : "würden",
+        "t_name" : "wirden"
+    },
+     {
+        "name" : "bestellen",
+        "t_name" : "bestälen"
+    },
+     {
+        "name" : "könnten",
+        "t_name" : "köhnten"
+    },
+     {
+        "name" : "abholen",
+        "t_name" : "abholin"
+    },
+     {
+        "name" : "abholen",
+        "t_name" : "abholin"
+    },
+     {
+        "name" : "beste",
+        "t_name" : "bäste"
+    },
+     {
+        "name" : "grüße",
+        "t_name" : "grüse"
     }
 ]
